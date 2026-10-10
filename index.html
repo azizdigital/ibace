@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'">
+  <title>IbACE</title>
+  <meta name="description" content="Digital Operation Toolkit: isolation padlock register, lock boxes, calculators and rotation calendar. Works offline.">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="IbACE">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="splash" id="splash" aria-hidden="true">
+    <img src="icons/icon-512.png" alt="" width="120" height="120">
+    <p class="splash-name">IbACE</p>
+    <p class="splash-tag">Digital Operation Toolkit</p>
+  </div>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="icons/icon-192.png" alt="" width="44" height="44">
+        <div>
+          <h1>IbACE</h1>
+          <p class="operator-line"><span class="visually-hidden">Operator: </span><strong id="operator-name">not set</strong></p>
+        </div>
+      </div>
+      <button type="button" class="menu-btn" id="btn-menu" aria-label="Menu" aria-expanded="false" aria-controls="app-menu">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+    <div class="app-menu" id="app-menu" hidden>
+      <div class="header-chips">
+        <span class="chip" id="net-chip" title="IbACE works with or without a connection"><span class="dot" aria-hidden="true"></span><span id="net-text">Online</span></span>
+        <span class="chip" id="store-chip"><span class="dot" aria-hidden="true"></span><span id="store-text">Checking storage</span></span>
+      </div>
+      <button type="button" class="menu-item" id="btn-install" hidden><strong>Install IbACE</strong><span>Add it to this phone's home screen</span></button>
+      <button type="button" class="menu-item" id="btn-send"><strong>Send to admin</strong><span>End-of-shift report and export files</span></button>
+      <button type="button" class="menu-item" id="btn-sync"><strong>Sync with another phone</strong><span>Share or open a sync file</span></button>
+      <button type="button" class="menu-item" id="btn-export"><strong>Export for OIM Assist</strong><span>The two files, and backups</span></button>
+      <button type="button" class="menu-item" id="btn-report"><strong>PDF report</strong><span>Locks out, register and history</span></button>
+      <button type="button" class="menu-item" id="btn-settings"><strong>Settings</strong><span>Operator, update, reset</span></button>
+    </div>
+  </header>
+
+  <div class="banner banner-install" id="install-banner" role="status" hidden>
+    <div class="banner-inner">
+      <p id="install-text"></p>
+      <button type="button" class="btn btn-small btn-primary" id="install-go">Install</button>
+      <button type="button" class="btn btn-small" id="install-later">Not now</button>
+    </div>
+  </div>
+
+  <div class="banner" id="persist-banner" role="status" hidden>
+    <div class="banner-inner">
+      <p><strong>This device has not promised to keep IbACE's data.</strong>
+      The system may clear it when storage runs low. Install IbACE to the home screen and export regularly so nothing is lost.</p>
+      <button type="button" class="btn btn-small" id="btn-banner-dismiss">Hide</button>
+    </div>
+  </div>
+
+  <main>
+    <div class="seg lock-switch" id="lock-switch" role="group" aria-label="Lock register" hidden></div>
+
+    <div id="view-home"></div>
+
+    <div id="view-oim" hidden>
+    <section class="summary" aria-label="Padlock summary">
+      <div class="summary-counts" id="summary-counts"></div>
+      <div class="summary-cats" id="summary-cats"></div>
+    </section>
+
+    <section class="filters" aria-label="Filters">
+      <div class="search">
+        <label class="visually-hidden" for="search">Search by padlock ID or technician name</label>
+        <input type="search" id="search" placeholder="Search padlock ID or technician" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+      </div>
+      <div class="chip-row" id="filter-category" role="group" aria-label="Category"></div>
+      <div class="chip-row" id="filter-status" role="group" aria-label="Status"></div>
+    </section>
+
+    <p class="result-count" id="result-count" aria-live="polite"></p>
+    <section class="grid" id="grid" aria-label="Padlock register"></section>
+    </div>
+
+    <div id="view-tools" hidden></div>
+
+    <div id="view-me" hidden></div>
+
+    <div id="view-ops" hidden>
+      <p class="view-note">Prod locks are the operators' own record. They are not sent to OIM Assist.</p>
+      <section class="summary" aria-label="Operator lock summary">
+        <div class="summary-counts summary-counts-3" id="ops-counts"></div>
+      </section>
+      <section class="filters" aria-label="Operator lock filters">
+        <div class="search">
+          <label class="visually-hidden" for="ops-search">Search by lock number, user or location</label>
+          <input type="search" id="ops-search" placeholder="Search lock, user or location" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        </div>
+        <div class="chip-row" id="ops-filter-status" role="group" aria-label="Status"></div>
+      </section>
+      <p class="result-count" id="ops-result-count" aria-live="polite"></p>
+      <section class="grid" id="ops-grid" aria-label="Operator lock register"></section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>IbACE: Digital Operation Toolkit</p>
+    <p>&copy; 2026 Aziz Mohamad</p>
+    <p>Enterprise Solutions Division</p>
+  </footer>
+
+  <nav class="tabs" id="view-tabs" role="tablist" aria-label="Sections"></nav>
+
+  <div class="overlay overlay-sheet" id="sheet" hidden></div>
+  <div class="overlay overlay-sheet" id="ops-sheet" hidden></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <noscript><p class="noscript">IbACE needs JavaScript switched on to work.</p></noscript>
+  <script src="app.js"></script>
+  <script src="license.js"></script>
+  <script src="ops.js"></script>
+  <script src="lockbox.js"></script>
+  <script src="home.js"></script>
+  <script src="sync.js"></script>
+  <script src="tools.js"></script>
+  <script src="me.js"></script>
+  <script src="admin.js"></script>
+  <script src="settings.js"></script>
+  <script src="report.js"></script>
+</body>
+</html>
